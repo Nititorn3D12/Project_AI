@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Frontend Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script type="text/javascript" src="util.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script>
+        //ตัวอย่าง  JQuery การใช้ event ใน  JAVAScript และการใช้ ajax
+        $(document).ready(function () {
+           
+            callApiAddDataToCombobox("http://127.0.0.1:5000/resturant/category/","#cityList");
+            addCityListComboBoxEvent();
+        });
+
+        
+
+        function addCityListComboBoxEvent(){
+            $("#cityList").change(function () {
+                var city_name = $("#cityList").val();
+                $.ajax({
+                    url: "http://127.0.0.1:5000/resturant/rating/"+city_name,
+                    method: "GET",
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        createTable(data, '#dynamicTable');
+                        
+                        createChart(data, 'bar', 'myChart') ;
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+                });
+            });
+
+        }
+
+    </script>
+</head>
+
+<body>
+    <div>
+        <select id="cityList">
+              
+        </select>
+    </div>
+   
+    <div></div><canvas id="myChart" style="width:100%;max-width:700px"></canvas></div>
+    <div id="dynamicTable"></div>
+</body>
+</html>

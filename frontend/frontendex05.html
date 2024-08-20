@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Frontend Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script>
+        //ตัวอย่าง  JQuery การใช้ event ใน  JAVAScript และการใช้ ajax
+        $(document).ready(function () {
+            // addApiButtonEvent();
+            //callCityNameApi();
+            //addCityListComboBoxEvent();
+            callAbloneDataApi();
+            addPredictButtonEvent();
+            
+
+        });
+
+        //สร้าง AbaloneAPI
+        function callAbloneDataApi() {
+            $.ajax({
+                url: "http://127.0.0.1:5000/api/dataex05/",
+                method: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    createAbaloneTable(data);
+                    addCopyButtonEvent();
+                },
+                error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+            });
+
+        }
+
+        //สร้าง dynamic comboBox จากข้อมูล JSON ที่ส่งมาจาก Python
+        function callCityNameApi() {
+            $.ajax({
+                url: "http://127.0.0.1:5000/resturant/citynames/",
+                method: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    createCityNameComboBox(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+            });
+
+        }
+
+        function addCityListComboBoxEvent() {
+            $("#cityList").change(function () {
+                var city_name = $("#cityList").val();
+                $.ajax({
+                    url: "http://127.0.0.1:5000/resturant/top10categories/" + city_name,
+                    method: "GET",
+                    dataType: 'json',
+                    success: function (data) {
+                        alert(data['columns']);
+                        console.log(data)
+                        createTable(data);
+                        var barChart = data["barchart"]
+                        createBarChart(barChart);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+                });
+            });
+
+        }
+
+        function addPredictButtonEvent() {
+            $("#predict").click(function () {
+                var data_input = {
+                    "Length": $("#Length").val(),
+                    "Height": $("#Height").val(),
+                    "Shellweight": $("#Shellweight").val()
+                };
+                $.ajax({
+                    url: "http://127.0.0.1:5000/api/predictex05/",
+                    method: "POST",
+                    data: data_input,
+                    dataType: 'json',
+                    success: function (data) {
+                        alert(data);
+                        $("#PredictedRings").val(data);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+                });
+            });
+
+        }
+
+        function createCityNameComboBox(data) {
+            var comboBox = $("#cityList")
+            var rows = data["rows"]; //rows : แถวหลายแถว
+
+            for (let i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                var city_name = row[0];
+
+                comboBox.append('<option value="' + city_name + '">' + city_name + '</optoin>');
+            }
+        }
+
+        function addCopyButtonEvent() {
+            $(".copyData").click(function () {
+                var row = $(this).val();
+                var cells = row.split(",");
+                $("#Length").val(cells[0]);
+                $("#Height").val(cells[1]);
+                $("#Shellweight").val(cells[2]);
+                $("#TrueRings").val(cells[3]);
+            });
+
+
+        }
+
+
+        function addApiButtonEvent() {
+            //AJAX คือเทคนิคในการส่ง request ไปที่ backend ในที่นี้คือไพธอน
+            $("#api_button").click(function () {
+                $.ajax({
+                    url: "http://127.0.0.1:5000/resturant/sqltest/",
+                    method: "GET",
+                    dataType: 'json',
+                    success: function (data) {
+                        alert(data['columns']);
+                        console.log(data)
+                        createTable(data);
+                        var barChart = data["barchart"]
+                        createBarChart(barChart);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+                });
+            });
+        }
+
+        //สร้าง dynamic html table จากข้อมูล JSON ที่ส่งมาจาก Python
+        function createAbaloneTable(tableData) {
+            // create table
+            var $table = $('<table class="table table-striped">');
+            // caption
+            $table.append('<caption>MyTable</caption>')
+                // thead
+                .append('<thead>').children('thead')
+                .append('<tr />').children('tr');
+            var columns = tableData["columns"];
+            for (let i = 0; i < columns.length; i++) {
+                $table.append('<th>' + columns[i] + '</th>');
+            }
+
+            //tbody
+            var $tbody = $table.append('<tbody />').children('tbody');
+            var rows = tableData["rows"]; //rows : แถวหลายแถว
+            for (let i = 0; i < rows.length; i++) {
+                var row = rows[i]; //row : แถวเดียว
+                var trow = $tbody.append('<tr/>').children('tr:last');
+                for (let j = 0; j < row.length; j++) {
+                    var cell = row[j]; //cell : คอลัมในแถวปัจจุบัน
+                    trow.append("<td>" + cell + "</td>");
+                }
+                console.log('<button class="copyData" value="' + row + '">copy this data</button>');
+                trow.append('<button class="copyData" value="' + row + '">copy this data</button>');
+            }
+
+            $('#dynamicTable').html($table);
+
+        }
+
+        //สร้าง dynamic html table จากข้อมูล JSON ที่ส่งมาจาก Python
+        function createTable(tableData) {
+            // create table
+            var $table = $('<table class="table table-striped">');
+            // caption
+            $table.append('<caption>MyTable</caption>')
+                // thead
+                .append('<thead>').children('thead')
+                .append('<tr />').children('tr');
+            var columns = tableData["columns"];
+            for (let i = 0; i < columns.length; i++) {
+                $table.append('<th>' + columns[i] + '</th>');
+            }
+            //tbody
+            var $tbody = $table.append('<tbody />').children('tbody');
+            var rows = tableData["rows"]; //rows : แถวหลายแถว
+            for (let i = 0; i < rows.length; i++) {
+                var row = rows[i]; //row : แถวเดียว
+                var trow = $tbody.append('<tr/>').children('tr:last');
+                for (let j = 0; j < row.length; j++) {
+                    var cell = row[j]; //cell : คอลัมในแถวปัจจุบัน
+                    trow.append("<td>" + cell + "</td>");
+                }
+
+            }
+
+            $('#dynamicTable').html($table);
+
+        }
+
+        //สร้าง bar chart จากข้อมูล JSON ที่ส่งมาจาก Python
+        function createBarChart(barData) {
+            const data = {
+                labels: barData["labels"],
+                datasets: [{
+                    data: barData["data"]
+                }]
+            };
+
+
+            var mybarChart = new Chart("myChart", {
+                type: 'bar',
+                data: data
+            });
+        }
+    </script>
+    <style>
+    /* Remove the navbar's default margin-bottom and rounded borders */ 
+    .navbar {
+      margin-bottom: 0;
+      border-radius: 0;
+    }
+    
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 450px}
+    
+    /* Set gray background color and 100% height */
+    .sidenav {
+      padding-top: 20px;
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+    
+    /* Set black background color, white text and some padding */
+    footer {
+      background-color: #555;
+      color: white;
+      padding: 15px;
+    }
+    
+    /* On small screens, set height to 'auto' for sidenav and grid */
+    @media screen and (max-width: 767px) {
+      .sidenav {
+        height: auto;
+        padding: 15px;
+      }
+      .row.content {height:auto;} 
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>                        
+      </button>
+      <a class="navbar-brand" href="#">Logo</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Home</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+  
+<div class="container-fluid text-center">    
+  <div class="row content">
+    <div class="col-sm-2 sidenav">
+        <h2><a href="Lucky.html">contact</a></h2>
+        <h2><a href="frontendex01.html">Visualization</a></h2>
+        <h2><a href="frontendex05.html">ML Prediction</a></h2>
+    </div>
+    <div class="col-sm-8 text-left"> 
+        Length: <input type="text" id="Length" name="Length"><br><br>
+        Height: <input type="text" id="Height" name="Height"><br><br>
+        Shell weight: <input type="text" id="Shellweight" name="Shellweight"><br><br>
+        Predicted Rings Value: <input type="text" id="PredictedRings" name="PredictedRings"><br><br>
+        True Rings Value: <input type="text" id="TrueRings" name="TrueRings"><br><br>
+        <input type="button" id="predict" name="predict" value="Predict"><br><br>
+        <div id="dynamicTable"></div>
+    </div>
+    <div class="col-sm-2 sidenav">
+      <div class="well">
+        <p>Nititorn Donsay </p>
+      </div>
+      <div class="well">
+        <p>Apinut suebnam</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="container-fluid text-center">
+    <p>POWER BY : IT17 KPS</p>
+</footer>
+
+</body>
+</html>
+

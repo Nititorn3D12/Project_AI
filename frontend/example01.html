@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Frontend Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    
+    <script>
+        //$(document).ready( : event พิเศษจะถูกเรียกเมื่อโหลดหน้า page ครบแล้ว
+        $(document).ready(function () {
+            addEventCombobox();
+            addEventButton1();
+            addEventButton2();
+        }); 
+
+        function addEventCombobox(){
+            //เพิ่ม event การ เปลี่ยนตัวเลือก ให้กับ
+            //element ที่มี id เป็น cityList
+            
+            $("#cityList").change(function () {
+                // $("#cityList") เลือกอะไรอยู่
+                var x = $("#cityList").val();
+                alert(x);
+                //เปลี่ยนค่า html
+                $("#paragraph1").html(x);
+
+            });
+
+        }
+
+        function addEventButton1(){
+            //เพิ่ม event การ click ให้กับ
+            //element ที่มี id เป็น api_button
+            $("#api_button").click(function () {
+                alert("Hello");
+            });
+        }
+
+        function addEventButton2(){
+            
+        }
+
+
+
+    </script>
+
+</head>
+
+<body>
+    <div>
+        <select id="cityList">
+              <option value="volvo">Volvo</option>
+              <option value="saab">Saab</option>
+              <option value="opel">Opel</option>
+              <option value="audi">Audi</option>
+        </select>
+    </div>
+
+    <div><button id="api_button">Get External Content</button></div>
+    <div><button id="button2">Get External Content</button></div>
+    <p id="paragraph1"></p>
+    <p id="paragraph2"></p>
+</body>
+</html>

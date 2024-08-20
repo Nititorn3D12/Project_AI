@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Frontend Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script type="text/javascript" src="util.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script>
+        //ตัวอย่าง  JQuery การใช้ event ใน  JAVAScript และการใช้ ajax
+        $(document).ready(function () {
+            
+            callApiAddDataToCombobox("http://127.0.0.1:5000/api/ex02combobox/a","#cityList");
+            addCityListComboBoxEvent();
+        });
+
+        
+
+        function addCityListComboBoxEvent(){
+            $("#cityList").change(function () {
+                var city_name = $("#cityList").val();
+                $.ajax({
+                    url: "http://127.0.0.1:5000/api/UserInputEx02/"+city_name,
+                    method: "GET",
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        createTable(data, '#dynamicTable');
+                        //bar, line, pie
+                        createChart(data, 'pie', 'myChart') ;
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+                });
+            });
+
+        }
+
+    </script>
+    
+    <style>
+    /* Remove the navbar's default margin-bottom and rounded borders */ 
+    .navbar {
+      margin-bottom: 0;
+      border-radius: 0;
+    }
+    
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 450px}
+    
+    /* Set gray background color and 100% height */
+    .sidenav {
+      padding-top: 20px;
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+    
+    /* Set black background color, white text and some padding */
+    footer {
+      background-color: #ffffff;
+      color: rgb(84, 84, 84);
+      padding: 15px;
+    }
+    
+    /* On small screens, set height to 'auto' for sidenav and grid */
+    @media screen and (max-width: 767px) {
+      .sidenav {
+        height: auto;
+        padding: 15px;
+      }
+      .row.content {height:auto;} 
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>                        
+      </button>
+      <a class="navbar-brand" href="#">Logo</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">หน้าหลัก</a></li>
+        <button>
+          <div class="btn-group">            
+        </button>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+  
+<div class="container-fluid text-center">    
+  <div class="row content">
+    <div class="col-sm-2 sidenav">
+     
+      <h2><a href="Lucky.html">contact</a></h2>
+      <h2><a href="frontendex01.html">Visualization</a></h2>
+      <h2><a href="frontendex05.html">ML Prediction</a></h2>
+    
+    </div>
+    <div class="col-sm-8 text-left"> 
+        <div>
+            <select id="cityList">
+                  
+            </select>
+        </div>
+       
+        <div></div><canvas id="myChart" style="width:100%;max-width:700px"></canvas></div>
+        <div id="dynamicTable"></div>
+
+    </div>
+    
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="container-fluid text-center">
+ 
+</footer>
+
+</body>
+</html>
+
+
+
+

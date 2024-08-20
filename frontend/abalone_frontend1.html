@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Frontend Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script>
+        //ตัวอย่าง  JQuery การใช้ event ใน  JAVAScript และการใช้ ajax
+        $(document).ready(function () {
+            // addApiButtonEvent();
+            //callCityNameApi();
+            //addCityListComboBoxEvent();
+            callAbloneDataApi();
+            addPredictButtonEvent();
+            
+
+        });
+
+        //สร้าง AbaloneAPI
+        function callAbloneDataApi() {
+            $.ajax({
+                url: "http://127.0.0.1:5000/abalone/data/",
+                method: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    createAbaloneTable(data);
+                    addCopyButtonEvent();
+                },
+                error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+            });
+
+        }
+
+        //สร้าง dynamic comboBox จากข้อมูล JSON ที่ส่งมาจาก Python
+        function callCityNameApi() {
+            $.ajax({
+                url: "http://127.0.0.1:5000/resturant/citynames/",
+                method: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    createCityNameComboBox(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+            });
+
+        }
+
+        function addCityListComboBoxEvent() {
+            $("#cityList").change(function () {
+                var city_name = $("#cityList").val();
+                $.ajax({
+                    url: "http://127.0.0.1:5000/resturant/top10categories/" + city_name,
+                    method: "GET",
+                    dataType: 'json',
+                    success: function (data) {
+                        alert(data['columns']);
+                        console.log(data)
+                        createTable(data);
+                        var barChart = data["barchart"]
+                        createBarChart(barChart);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+                });
+            });
+
+        }
+
+        function addPredictButtonEvent() {
+            $("#predict").click(function () {
+                var data_input = {
+                    "Length": $("#Length").val(),
+                    "Diameter": $("#Diameter").val(),
+                    "Height": $("#Height").val(),
+                    "Wholeweight": $("#Wholeweight").val(),
+                    "Shuckedweight": $("#Shuckedweight").val(),
+                    "Visceraweight": $("#Visceraweight").val(),
+                    "Shellweight": $("#Shellweight").val(),
+                    "Rings": $("#Rings").val()
+                };
+                $.ajax({
+                    url: "http://127.0.0.1:5000/abalone/predict/",
+                    method: "POST",
+                    data: data_input,
+                    dataType: 'json',
+                    success: function (data) {
+                        alert(data);
+                        $("#PredictedRings").val(data);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+                });
+            });
+
+        }
+
+        function createCityNameComboBox(data) {
+            var comboBox = $("#cityList")
+            var rows = data["rows"]; //rows : แถวหลายแถว
+
+            for (let i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                var city_name = row[0];
+
+                comboBox.append('<option value="' + city_name + '">' + city_name + '</optoin>');
+            }
+        }
+
+        function addCopyButtonEvent() {
+            $(".copyData").click(function () {
+                var row = $(this).val();
+                var cells = row.split(",");
+                $("#Length").val(cells[0]);
+                $("#Diameter").val(cells[1]);
+                $("#Height").val(cells[2]);
+                $("#Wholeweight").val(cells[3]);
+                $("#Shuckedweight").val(cells[4]);
+                $("#Visceraweight").val(cells[5]);
+                $("#Shellweight").val(cells[6]);
+                $("#TrueRings").val(cells[7]);
+            });
+
+
+        }
+
+
+        function addApiButtonEvent() {
+            //AJAX คือเทคนิคในการส่ง request ไปที่ backend ในที่นี้คือไพธอน
+            $("#api_button").click(function () {
+                $.ajax({
+                    url: "http://127.0.0.1:5000/resturant/sqltest/",
+                    method: "GET",
+                    dataType: 'json',
+                    success: function (data) {
+                        alert(data['columns']);
+                        console.log(data)
+                        createTable(data);
+                        var barChart = data["barchart"]
+                        createBarChart(barChart);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) { alert(thrownError); }
+                });
+            });
+        }
+
+        //สร้าง dynamic html table จากข้อมูล JSON ที่ส่งมาจาก Python
+        function createAbaloneTable(tableData) {
+            // create table
+            var $table = $('<table class="table table-striped">');
+            // caption
+            $table.append('<caption>MyTable</caption>')
+                // thead
+                .append('<thead>').children('thead')
+                .append('<tr />').children('tr');
+            var columns = tableData["columns"];
+            for (let i = 0; i < columns.length; i++) {
+                $table.append('<th>' + columns[i] + '</th>');
+            }
+
+            //tbody
+            var $tbody = $table.append('<tbody />').children('tbody');
+            var rows = tableData["rows"]; //rows : แถวหลายแถว
+            for (let i = 0; i < rows.length; i++) {
+                var row = rows[i]; //row : แถวเดียว
+                var trow = $tbody.append('<tr/>').children('tr:last');
+                for (let j = 0; j < row.length; j++) {
+                    var cell = row[j]; //cell : คอลัมในแถวปัจจุบัน
+                    trow.append("<td>" + cell + "</td>");
+                }
+                console.log('<button class="copyData" value="' + row + '">copy this data</button>');
+                trow.append('<button class="copyData" value="' + row + '">copy this data</button>');
+            }
+
+            $('#dynamicTable').html($table);
+
+        }
+
+        //สร้าง dynamic html table จากข้อมูล JSON ที่ส่งมาจาก Python
+        function createTable(tableData) {
+            // create table
+            var $table = $('<table class="table table-striped">');
+            // caption
+            $table.append('<caption>MyTable</caption>')
+                // thead
+                .append('<thead>').children('thead')
+                .append('<tr />').children('tr');
+            var columns = tableData["columns"];
+            for (let i = 0; i < columns.length; i++) {
+                $table.append('<th>' + columns[i] + '</th>');
+            }
+            //tbody
+            var $tbody = $table.append('<tbody />').children('tbody');
+            var rows = tableData["rows"]; //rows : แถวหลายแถว
+            for (let i = 0; i < rows.length; i++) {
+                var row = rows[i]; //row : แถวเดียว
+                var trow = $tbody.append('<tr/>').children('tr:last');
+                for (let j = 0; j < row.length; j++) {
+                    var cell = row[j]; //cell : คอลัมในแถวปัจจุบัน
+                    trow.append("<td>" + cell + "</td>");
+                }
+
+            }
+
+            $('#dynamicTable').html($table);
+
+        }
+
+        //สร้าง bar chart จากข้อมูล JSON ที่ส่งมาจาก Python
+        function createBarChart(barData) {
+            const data = {
+                labels: barData["labels"],
+                datasets: [{
+                    data: barData["data"]
+                }]
+            };
+
+
+            var mybarChart = new Chart("myChart", {
+                type: 'bar',
+                data: data
+            });
+        }
+    </script>
+</head>
+
+<body>
+    Length: <input type="text" id="Length" name="Length"><br><br>
+    Diameter: <input type="text" id="Diameter" name="Diameter"><br><br>
+    Height: <input type="text" id="Height" name="Height"><br><br>
+    Whole weight: <input type="text" id="Wholeweight" name="Wholeweight"><br><br>
+    Shucked weight: <input type="text" id="Shuckedweight" name="Shuckedweight"><br><br>
+    Viscera weight: <input type="text" id="Visceraweight" name="Visceraweight"><br><br>
+    Shell weight: <input type="text" id="Shellweight" name="Shellweight"><br><br>
+    Predicted Rings Value: <input type="text" id="PredictedRings" name="PredictedRings"><br><br>
+    True Rings Value: <input type="text" id="TrueRings" name="TrueRings"><br><br>
+    <input type="button" id="predict" name="predict" value="Predict"><br><br>
+    <div id="dynamicTable"></div>
+</body>
+
+</html>
